@@ -34,12 +34,12 @@ overallEthValue: float = 0.0
 def get_block_number() -> int:
     while True:
         try:
-            block_number = int(input('Enter the Ethereum block number: '))
+            block_number: int = int(input('Enter the Ethereum block number: '))
             return block_number
         except ValueError:
             print('Invalid input. Please enter a valid integer for the block number.')
 
-def process_tx(transaction, txHash: str, top_level: bool =True) -> None:
+def process_tx(transaction: Transaction, txHash: str, top_level: bool = True) -> None:
     calls: list[InnerTransaction] = transaction.get('result').get('calls') if top_level else transaction.get('calls')
     if calls and len(calls) > 0:
         for child_tx in calls:
@@ -58,9 +58,12 @@ def process_tx(transaction, txHash: str, top_level: bool =True) -> None:
             process_tx(child_tx, txHash, False)
 
 def process_block(block_number: int) -> None:
-    
-    blockResponse: TraceBlockResponse = w3.provider.make_request('debug_traceBlockByNumber', [hex(block_number),
-            {  'tracer': 'callTracer', 'onlyTopCall': 'false' }])
+    try:
+        blockResponse: TraceBlockResponse = w3.provider.make_request('debug_traceBlockByNumber', [hex(block_number),
+                {  'tracer': 'callTracer', 'onlyTopCall': 'false' }])
+    except Exception as e:
+        print(f'Error in make_request debug_traceBlockByNumber: {e}')
+        return
 
     blockTransactions: list[Transaction] = blockResponse.get('result')
     
