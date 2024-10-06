@@ -24,7 +24,9 @@ except KeyError as e:
     exit(1)
 
 w3 = Web3(Web3.HTTPProvider(rpc_url))
-foundSuspiciousTx = False
+suspiciousTxCount: int = 0
+overallEthValue: float = 0.0
+
 
 def get_block_number():
     while True:
@@ -42,13 +44,16 @@ def process_tx(transaction, txHash: str, top_level: bool =True):
     if calls and len(calls) > 0:
         for child_tx in calls:
             if child_tx.get('from').lower() == tornado_cash_address.lower():
-                global foundSuspiciousTx
-                foundSuspiciousTx = True
+                global suspiciousTxCount
+                suspiciousTxCount += 1
+                currentEthValue = w3.from_wei(int(child_tx.get('value'), 0), 'ether')
+                global overallEthValue
+                overallEthValue += float(currentEthValue)
                 print('Tornado Cash transaction detected:')
                 print(f" - Transaction Hash: {txHash}")
                 print(f" - From: {child_tx.get('from')}")
                 print(f" - To: {child_tx.get('to')}")
-                print(f" - Value: {w3.from_wei(int(child_tx.get('value'), 0), 'ether')} ETH")
+                print(f" - Value: {currentEthValue} ETH")
                 print('-' * 70)
             process_tx(child_tx, txHash, False)
 
@@ -67,10 +72,13 @@ def process_block(block_number):
         txHash = transaction.get('txHash')
         process_tx(transaction, txHash)
         
-    print(f"Completed scanning for Tornado Cash transfers in {block_number} block.")
+    print(f"Completed scanning for Tornado Cash transfers in block #{block_number}.")
     
-    if not foundSuspiciousTx:
+    if suspiciousTxCount == 0:
         print("No Tornado Cash transfer detected.")
+    else:
+        print(f"Detected {suspiciousTxCount} Tornado Cash transfers in block #{block_number}.")
+        print(f"Total value of suspicious transactions: {overallEthValue} ETH")
 
 if __name__ == "__main__":
     block_number = get_block_number()
