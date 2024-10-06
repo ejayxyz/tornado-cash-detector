@@ -24,7 +24,6 @@ except KeyError as e:
     exit(1)
 
 w3 = Web3(Web3.HTTPProvider(rpc_url)) 
-block_number = 17475649
 foundSuspiciousTx = False
 
 def process_tx(transaction, txHash: str, top_level: bool =True):
@@ -67,8 +66,7 @@ def detect_tornado_cash_transfers_in_block(block_number):
 
 
 if __name__ == "__main__":
-    # todo input
-    # block_number = int(input("Enter the Ethereum block number: "))
+    block_number = int(input("Enter the Ethereum block number: "))
 
     if w3.is_connected():
         print(f"Connected to Ethereum node. Scanning block {block_number}..")
