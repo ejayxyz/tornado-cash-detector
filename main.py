@@ -1,5 +1,5 @@
 # log these: transaction hash & funded address & value of sent ether
-# testable blocks: 20031962, 17475649, 20877171
+# testable blocks: 20031962, 17475649, 20877171, 19226185
 
 import os
 from dotenv import load_dotenv

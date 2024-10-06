@@ -2,7 +2,7 @@
 
 Simple tornado cash detector by given  block number and tornado cash address. For the script to work, it is necessary that the given RPC Geth node has the debug namespace enabled, because the `debug_traceBlockByNumber` method is part of the debug API.
 
-Manually tested blocks are `20031962`, `17475649`, `20877171` with the given `0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936` tornado cash address.
+Manually tested blocks are `20031962`, `17475649`, `20877171`, `19226185` with the given `0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936` tornado cash address.
 
 With minor improvements, this script can be used to detect any ERC20 token transfer `to` or `from` a specific address.
 
