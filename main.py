@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from web3 import Web3
 from json_types import InnerTransaction, Transaction, TraceBlockResponse
 
+suspiciousTxCount: int = 0
+overallEthValue: float = 0.0
 
 load_dotenv()
 
@@ -25,11 +27,9 @@ try:
 except KeyError as e:
     print(f'Error: {e}')
     exit(1)
-
+    
 w3: Web3 = Web3(Web3.HTTPProvider(rpc_url))
-suspiciousTxCount: int = 0
-overallEthValue: float = 0.0
-
+    
 
 def get_block_number() -> int:
     while True:
@@ -41,21 +41,22 @@ def get_block_number() -> int:
 
 def process_tx(transaction: Transaction, txHash: str, top_level: bool = True) -> None:
     calls: list[InnerTransaction] = transaction.get('result').get('calls') if top_level else transaction.get('calls')
-    if calls and len(calls) > 0:
-        for child_tx in calls:
-            if child_tx.get('from').lower() == tornado_cash_address.lower():
-                global suspiciousTxCount
-                suspiciousTxCount += 1
-                currentEthValue = w3.from_wei(int(child_tx.get('value'), 0), 'ether')
-                global overallEthValue
-                overallEthValue += float(currentEthValue)
-                print('Tornado Cash transaction detected:')
-                print(f' - Transaction Hash: {txHash}')
-                print(f' - From: {child_tx.get('from')}')
-                print(f' - To: {child_tx.get('to')}')
-                print(f' - Value: {currentEthValue} ETH')
-                print('-' * 70)
-            process_tx(child_tx, txHash, False)
+    if not calls:
+        return
+    for child_tx in calls:
+        if child_tx.get('from').lower() == tornado_cash_address.lower():
+            global suspiciousTxCount
+            suspiciousTxCount += 1
+            currentEthValue = w3.from_wei(int(child_tx.get('value'), 0), 'ether')
+            global overallEthValue
+            overallEthValue += float(currentEthValue)
+            print('Tornado Cash transaction detected:')
+            print(f' - Transaction Hash: {txHash}')
+            print(f' - From: {child_tx.get('from')}')
+            print(f' - To: {child_tx.get('to')}')
+            print(f' - Value: {currentEthValue} ETH')
+            print('-' * 70)
+        process_tx(child_tx, txHash, False)
 
 def process_block(block_number: int) -> None:
     try:
