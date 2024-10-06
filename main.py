@@ -10,7 +10,7 @@ load_dotenv()
 def get_env(env_var):
     value = os.getenv(env_var)
     if value is None:
-        raise KeyError(f"Environment variable '{env_var}' is not set.")
+        raise KeyError(f"Environment variable {env_var} is not set.")
     return value
 
 try:
@@ -23,7 +23,7 @@ except KeyError as e:
     print(f"Error: {e}")
     exit(1)
 
-w3 = Web3(Web3.HTTPProvider(rpc_url)) 
+w3 = Web3(Web3.HTTPProvider(rpc_url))
 foundSuspiciousTx = False
 
 def get_block_number():
@@ -52,7 +52,7 @@ def process_tx(transaction, txHash: str, top_level: bool =True):
                 print('-' * 70)
             process_tx(child_tx, txHash, False)
 
-def detect_tornado_cash_transfers_in_block(block_number):
+def process_block(block_number):
     
     blockResponse = w3.provider.make_request('debug_traceBlockByNumber', [hex(block_number),
             {  'tracer': 'callTracer', 'onlyTopCall': 'false' }])
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     if w3.is_connected():
         print(f"Connected to Ethereum node. Scanning block {block_number}..")
-        detect_tornado_cash_transfers_in_block(block_number)
+        process_block(block_number)
     else:
         print("Failed to connect to Ethereum node.")
 
